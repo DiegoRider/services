@@ -22,7 +22,7 @@ use {
 /// An auction is a set of orders that can be solved. The solvers calculate
 /// [`super::solution::Solution`]s by picking subsets of these orders and
 /// solving them.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Auction {
     /// See the [`Self::id`] method.
     id: Option<Id>,

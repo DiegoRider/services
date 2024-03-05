@@ -1,0 +1,19 @@
+[[solver]]
+name = "FractalSolver"                                 # Arbitrary name given to this solver, must be unique
+endpoint = "http://0.0.0.0:6000"                       # 
+absolute-slippage = "40000000000000000"                # Denominated in wei, optional
+relative-slippage = "0.1"                              # Percentage in the [0, 1] range
+account = "0x755BaE1cd46C9C27A3230AeF0CE923BDa13d29F7" # public key of an actual solver
+
+[submission]
+gas-price-cap = "1000000000000" # 1000 Gwei
+
+[[submission.mempool]]
+mempool = "public"
+revert-protection = true
+
+[contracts] # Optionally override the contract addresses, necessary on less popular blockchains
+gp-v2-settlement = "0x9008D19f58AAbD9eD0D60971565AA8510560ab41"
+weth = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+
+[liquidity]

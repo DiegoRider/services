@@ -184,11 +184,11 @@ where
             SimulatorError::Tenderly(tenderly::Error::Http(_)) => None,
             SimulatorError::Tenderly(tenderly::Error::Revert(_)) => Some(tx),
             SimulatorError::Blockchain(error) => {
-                if error.is_revert() {
-                    Some(tx)
-                } else {
-                    None
-                }
+                // if error.is_revert() {
+                Some(tx)
+                // } else {
+                //     None
+                // }
             }
             SimulatorError::Enso(enso::Error::Http(_)) => None,
             SimulatorError::Enso(enso::Error::Revert(_)) => Some(tx),

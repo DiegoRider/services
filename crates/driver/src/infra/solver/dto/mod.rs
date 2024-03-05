@@ -4,7 +4,10 @@ mod auction;
 mod notification;
 mod solution;
 
-pub use {auction::Auction, notification::Notification, solution::Solutions};
+pub use {
+    auction::Auction, auction::Liquidity, auction::WeightedProductVersion,
+    notification::Notification, solution::Solutions,
+};
 
 #[derive(Debug, thiserror::Error)]
 #[error("{0}")]
