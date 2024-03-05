@@ -6,8 +6,7 @@ use {
                 auction::{self, Auction},
                 solution::{self, Solution},
             },
-            eth,
-            liquidity,
+            eth, liquidity,
             time::Remaining,
         },
         infra::{blockchain::Ethereum, config::file::FeeHandler},
@@ -83,7 +82,7 @@ pub struct Timeouts {
 #[derive(Debug, Clone)]
 pub struct Solver {
     client: reqwest::Client,
-    config: Config,
+    pub config: Config,
     eth: Ethereum,
 }
 

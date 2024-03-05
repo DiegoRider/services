@@ -100,6 +100,17 @@ impl From<api::routes::AuctionError> for (hyper::StatusCode, axum::Json<Error>) 
     }
 }
 
+impl From<api::routes::GasError> for (hyper::StatusCode, axum::Json<Error>) {
+    fn from(value: api::routes::GasError) -> Self {
+        let error = match value {
+            api::routes::GasError::LiquidityError => Kind::Unknown,
+            api::routes::GasError::EncodeSolutionError => Kind::Unknown,
+            api::routes::GasError::EncodeAuctionError => Kind::Unknown,
+        };
+        error.into()
+    }
+}
+
 impl From<api::routes::OrderError> for (hyper::StatusCode, axum::Json<Error>) {
     fn from(value: api::routes::OrderError) -> Self {
         let error = match value {

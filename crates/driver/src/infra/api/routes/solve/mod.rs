@@ -1,6 +1,6 @@
 mod dto;
 
-pub use dto::AuctionError;
+pub use dto::{Auction, AuctionError};
 use {
     crate::infra::{
         api::{Error, State},

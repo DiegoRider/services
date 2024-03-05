@@ -9,19 +9,19 @@ use {
         infra::{
             self,
             blockchain::Ethereum,
-            notify,
-            observe,
+            notify, observe,
             solver::{self, SolutionMerging, Solver},
             Simulator,
         },
         util::Bytes,
     },
-    futures::{stream::FuturesUnordered, StreamExt},
+    futures::{stream::FuturesUnordered, Stream, StreamExt},
     itertools::Itertools,
     std::{
         cmp::Reverse,
         collections::{HashMap, HashSet},
         sync::Mutex,
+        time::Duration,
     },
     tap::TapFallible,
 };
@@ -52,6 +52,52 @@ pub struct Competition {
 }
 
 impl Competition {
+    pub async fn estimate_gas(
+        &self,
+        auction: &Auction,
+        solutions: Vec<Solution>,
+    ) -> Result<Vec<(u64, (eth::U256, bool, String))>, Error> {
+        // encode into settlements streamed
+        let encoded = solutions
+            .into_iter()
+            .map(|solution| async move {
+                let id = solution.id().clone();
+                observe::encoding(&id);
+                let settlement = solution.encode(auction, &self.eth, &self.simulator).await;
+                (id, settlement)
+            })
+            .collect::<FuturesUnordered<_>>();
+
+        // collect settlements
+        let mut settlements = Vec::new();
+        if tokio::time::timeout(
+            Duration::from_secs(3),
+            collect_settlements(&mut settlements, encoded),
+        )
+        .await
+        .is_err()
+        {
+            tracing::warn!("gas request - postprocessing timed out");
+        };
+
+        // extract gas estimates
+        let gas_estimates = settlements
+            .into_iter()
+            .map(|(id, result)| match result {
+                Ok(settlement) => (
+                    settlement.solution().ids()[0],
+                    (settlement.gas.estimate.0, true, "".to_string()),
+                ),
+                Err(err) => {
+                    observe::encoding_failed(self.solver.name(), &id, &err);
+                    (id.ids()[0], (eth::U256::zero(), false, err.to_string()))
+                }
+            })
+            .collect_vec();
+
+        Ok(gas_estimates)
+    }
+
     /// Solve an auction as part of this competition.
     pub async fn solve(&self, auction: &Auction) -> Result<Option<Solved>, Error> {
         let liquidity = match self.solver.liquidity() {
@@ -347,6 +393,17 @@ fn merge(solutions: impl Iterator<Item = Solution>, auction: &Auction) -> Vec<So
         )
     });
     merged
+}
+
+async fn collect_settlements(
+    merged: &mut Vec<(solution::Id, Result<Settlement, solution::Error>)>,
+    new: impl Stream<Item = (solution::Id, Result<Settlement, solution::Error>)>,
+) {
+    let mut new = std::pin::pin!(new);
+    while let Some(settlement) = new.next().await {
+        // settlement.solutions().
+        merged.push(settlement);
+    }
 }
 
 /// Solution information sent to the protocol by the driver before the solution

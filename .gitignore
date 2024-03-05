@@ -1,5 +1,6 @@
 .DS_Store
-
+driver_pid.log
+nohup.out
 /target
 /.vscode
 /.idea
